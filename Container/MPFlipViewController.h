@@ -38,12 +38,18 @@ typedef NSInteger MPFlipViewControllerDirection; // For 'MPFlipViewControllerOri
 @property (nonatomic, readonly) NSArray *gestureRecognizers;
 @property (nonatomic, assign) id <MPFlipViewControllerDelegate> delegate;
 @property (nonatomic, assign) id <MPFlipViewControllerDataSource> dataSource; // If nil, user gesture-driven navigation will be disabled.
+@property (nonatomic, assign, getter = isGestureDriven) BOOL gestureDriven;
+@property (nonatomic, assign, getter = isRubberbanding) BOOL rubberbanding;
 
 // designated initializer
 - (id)initWithOrientation:(MPFlipViewControllerOrientation)orientation;
 
 // flip to a new page
 - (void)setViewController:(UIViewController *)viewController direction:(MPFlipViewControllerDirection)direction animated:(BOOL)animated completion:(void (^)(BOOL finished))completion;
+
+// private method to override
+- (BOOL)startFlipWithDirection:(MPFlipViewControllerDirection)direction;
+- (void)startFlipToViewController:(UIViewController *)destinationController fromViewController:(UIViewController *)sourceController withDirection:(MPFlipViewControllerDirection)direction;
 
 @end
 

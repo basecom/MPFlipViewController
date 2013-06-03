@@ -25,9 +25,7 @@ NSString *MPFlipViewControllerDidFinishAnimatingNotification = @"com.markpospese
 @property (nonatomic, assign) NSArray *gestureRecognizers;
 @property (nonatomic, assign) BOOL gesturesAdded;
 @property (nonatomic, readonly) BOOL isAnimating;
-@property (nonatomic, assign, getter = isGestureDriven) BOOL gestureDriven;
 @property (nonatomic, assign, getter = isPanning) BOOL panning;
-@property (nonatomic, assign, getter = isRubberbanding) BOOL rubberbanding;
 @property (nonatomic, strong) MPFlipTransition *flipTransition;
 @property (assign, nonatomic) CGPoint panStart;
 @property (assign, nonatomic) CGPoint lastPanPosition;
