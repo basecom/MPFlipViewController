@@ -65,7 +65,10 @@ typedef NSInteger MPFlipViewControllerDirection; // For 'MPFlipViewControllerOri
 
 @end
 
-@protocol MPFlipViewControllerDataSource 
+@protocol MPFlipViewControllerDataSource<NSObject>
+
+- (NSSet *)flipViewControllerClassesToIgnoreGestureHandling:(MPFlipViewController *)flipViewController;
+
 @required
 
 - (UIViewController *)flipViewController:(MPFlipViewController *)flipViewController viewControllerBeforeViewController:(UIViewController *)viewController; // get previous page, or nil for none
