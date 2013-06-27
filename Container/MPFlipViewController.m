@@ -73,7 +73,7 @@ NSString *MPFlipViewControllerDidFinishAnimatingNotification = @"com.markpospese
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
-
+    
 	[self addGestures];
 }
 
@@ -155,7 +155,7 @@ NSString *MPFlipViewControllerDidFinishAnimatingNotification = @"com.markpospese
 	[self.view addGestureRecognizer:pan];
 	
 	self.gestureRecognizers = [NSArray arrayWithObjects:left, right, tap, pan, nil];
-
+    
 	[self setGesturesAdded:YES];
 }
 
@@ -173,15 +173,15 @@ NSString *MPFlipViewControllerDidFinishAnimatingNotification = @"com.markpospese
 	
 	if (animated && previousController)
 	{
-		[self startFlipToViewController:viewController 
-					 fromViewController:previousController 
+		[self startFlipToViewController:viewController
+					 fromViewController:previousController
 						  withDirection:(isForward? MPFlipStyleDefault : MPFlipStyleDirectionBackward)];
 		
 		[self.flipTransition perform:^(BOOL finished) {
 			[self endFlipAnimation:finished transitionCompleted:YES completion:completion];
 		}];
 	}
-	else 
+	else
 	{
 		[[self view] addSubview:[viewController view]];
 		[[previousController view] removeFromSuperview];
@@ -194,10 +194,29 @@ NSString *MPFlipViewControllerDidFinishAnimatingNotification = @"com.markpospese
 
 #pragma mark - Gesture handlers
 
+- (BOOL)isIgnoredClassOnGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer
+{
+    if([[self dataSource] respondsToSelector:@selector(flipViewControllerClassesToIgnoreGestureHandling:)])
+    {
+        CGPoint touchLocation = [gestureRecognizer locationInView:self.view];
+        UIView *touchedView = [gestureRecognizer.view hitTest:touchLocation withEvent:nil];
+        
+        if([[self.dataSource flipViewControllerClassesToIgnoreGestureHandling:self] containsObject:touchedView.class])
+            return YES;
+        else
+            return NO;
+    }
+    
+    return NO;
+}
+
 - (void)handleTap:(UITapGestureRecognizer *)gestureRecognizer
 {
 	if ([self isAnimating])
 		return;
+    
+    if([self isIgnoredClassOnGestureRecognizer:gestureRecognizer])
+        return;
 	
 	CGPoint tapPoint = [gestureRecognizer locationInView:self.view];
 	BOOL isHorizontal = [self orientation] == MPFlipViewControllerOrientationHorizontal;
@@ -214,8 +233,10 @@ NSString *MPFlipViewControllerDidFinishAnimatingNotification = @"com.markpospese
 {
 	if ([self isAnimating])
 		return;
+    
+    if([self isIgnoredClassOnGestureRecognizer:gestureRecognizer])
+        return;
 	
-	NSLog(@"Swipe to previous page");
 	[self gotoPreviousPage];
 }
 
@@ -223,13 +244,23 @@ NSString *MPFlipViewControllerDidFinishAnimatingNotification = @"com.markpospese
 {
 	if ([self isAnimating])
 		return;
-	
-	NSLog(@"Swipe to next page");
+    
+    if([self isIgnoredClassOnGestureRecognizer:gestureRecognizer])
+        return;
+    
+    CGPoint touchLocation = [gestureRecognizer locationInView:self.view];
+    UIView *touchedView = [gestureRecognizer.view hitTest:touchLocation withEvent:nil];
+    
+    NSLog(@"%@", touchedView.class);
+    
 	[self gotoNextPage];
 }
 
 - (void)handlePan:(UIPanGestureRecognizer *)gestureRecognizer
 {
+    if([self isIgnoredClassOnGestureRecognizer:gestureRecognizer])
+        return;
+    
     UIGestureRecognizerState state = [gestureRecognizer state];
 	CGPoint currentPosition = [gestureRecognizer locationInView:self.view];
 	
@@ -321,7 +352,7 @@ NSString *MPFlipViewControllerDidFinishAnimatingNotification = @"com.markpospese
 			{
 				// Detected a swipe to the right/bottom
 				shouldFallBack = self.direction == MPFlipViewControllerDirectionForward;
-			}				
+			}
 			
 			// finish Animation
 			[self finishPan:shouldFallBack];
@@ -428,8 +459,8 @@ NSString *MPFlipViewControllerDidFinishAnimatingNotification = @"com.markpospese
 	if (![self dataSource])
 		return NO;
 	
-	UIViewController *destinationController = (direction == MPFlipViewControllerDirectionForward)? 
-	[[self dataSource] flipViewController:self viewControllerAfterViewController:[self viewController]] : 
+	UIViewController *destinationController = (direction == MPFlipViewControllerDirectionForward)?
+	[[self dataSource] flipViewController:self viewControllerAfterViewController:[self viewController]] :
 	[[self dataSource] flipViewController:self viewControllerBeforeViewController:[self viewController]];
 	
 	if (!destinationController)
@@ -452,9 +483,9 @@ NSString *MPFlipViewControllerDidFinishAnimatingNotification = @"com.markpospese
 	[self setSourceController:sourceController];
 	[self setDestinationController:destinationController];
 	[self setDirection:direction];
-	self.flipTransition = [[MPFlipTransition alloc] initWithSourceView:[sourceController view] 
-													   destinationView:[destinationController view] 
-															  duration:0.5 
+	self.flipTransition = [[MPFlipTransition alloc] initWithSourceView:[sourceController view]
+													   destinationView:[destinationController view]
+															  duration:0.5
 																 style:((isForward? MPFlipStyleDefault : MPFlipStyleDirectionBackward) | (isVertical? MPFlipStyleOrientationVertical : MPFlipStyleDefault))
 													  completionAction:MPTransitionActionAddRemove];
 	
@@ -477,7 +508,7 @@ NSString *MPFlipViewControllerDidFinishAnimatingNotification = @"com.markpospese
 		// If page turn was completed, then we need to send our various notifications as per the Containment API
 		if (didStartAsPan)
 		{
-			// these weren't sent at beginning (because we couldn't know beforehand 
+			// these weren't sent at beginning (because we couldn't know beforehand
 			// whether the gesture would result in a page turn or not)
 			[self addChildViewController:self.destinationController]; // this calls [self.destinationController willMoveToParentViewController:self] for us
 			[self setChildViewController:self.destinationController];
@@ -506,7 +537,7 @@ NSString *MPFlipViewControllerDidFinishAnimatingNotification = @"com.markpospese
 		id newController = self.destinationController? self.destinationController : [NSNull null];
 		NSDictionary *info = [NSDictionary dictionaryWithObjects:
 							  [NSArray arrayWithObjects:[NSNumber numberWithBool:animationFinished], [NSNumber numberWithBool:transitionCompleted], previousController, newController, nil]
-													  forKeys:
+                                                         forKeys:
 							  [NSArray arrayWithObjects:MPAnimationFinishedKey, MPTransitionCompletedKey, MPPreviousControllerKey, MPNewControllerKey, nil]];
 		[[NSNotificationCenter defaultCenter] postNotificationName:MPFlipViewControllerDidFinishAnimatingNotification
 															object:self
@@ -557,7 +588,7 @@ NSString *MPFlipViewControllerDidFinishAnimatingNotification = @"com.markpospese
 	}
 	
 	[self setGestureDriven:YES];
-	[self setViewController:nextController direction:MPFlipViewControllerDirectionForward animated:YES completion:nil];	
+	[self setViewController:nextController direction:MPFlipViewControllerDirectionForward animated:YES completion:nil];
 }
 
 @end
