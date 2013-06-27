@@ -248,11 +248,6 @@ NSString *MPFlipViewControllerDidFinishAnimatingNotification = @"com.markpospese
     if([self isIgnoredClassOnGestureRecognizer:gestureRecognizer])
         return;
     
-    CGPoint touchLocation = [gestureRecognizer locationInView:self.view];
-    UIView *touchedView = [gestureRecognizer.view hitTest:touchLocation withEvent:nil];
-    
-    NSLog(@"%@", touchedView.class);
-    
 	[self gotoNextPage];
 }
 
