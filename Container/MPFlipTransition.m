@@ -624,27 +624,29 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 		if (completion)
 			completion(YES); // execute the completion block that was passed in
 	}];
-	
-	// Flip back page from vertical down to flat
-	CABasicAnimation* animation2 = [CABasicAnimation animationWithKeyPath:rotationKey];
-	[animation2 setFromValue:[NSNumber numberWithDouble:-90*factor*(1-fromProgress)]];
-	[animation2 setToValue:[NSNumber numberWithDouble:0]];
-	[animation2 setFillMode:kCAFillModeForwards];
-	[animation2 setRemovedOnCompletion:NO];
-	[layer addAnimation:animation2 forKey:nil];
-	[layer setTransform:CATransform3DIdentity];
-	
-	// Shadows
-	
-	// Lighten back page just slightly as we flip (just to give it a crease where it touches reveal page)
-	animation2 = [CABasicAnimation animationWithKeyPath:@"opacity"];
-	[animation2 setFromValue:[NSNumber numberWithDouble:[self flippingPageShadowOpacity] * (1-fromProgress)]];
-	[animation2 setToValue:[NSNumber numberWithDouble:0]];
-	[animation2 setFillMode:kCAFillModeForwards];
-	[animation2 setRemovedOnCompletion:NO];
-	[flippingShadow addAnimation:animation2 forKey:nil];
-	[flippingShadow setOpacity:0];
-	
+    if(fromProgress < 2.f)
+    {
+        // Flip back page from vertical down to flat
+        CABasicAnimation* animation2 = [CABasicAnimation animationWithKeyPath:rotationKey];
+        [animation2 setFromValue:[NSNumber numberWithDouble:-90*factor*(1-fromProgress)]];
+        [animation2 setToValue:[NSNumber numberWithDouble:0]];
+        [animation2 setFillMode:kCAFillModeForwards];
+        [animation2 setRemovedOnCompletion:NO];
+        [layer addAnimation:animation2 forKey:nil];
+        [layer setTransform:CATransform3DIdentity];
+        
+        // Shadows
+        
+        // Lighten back page just slightly as we flip (just to give it a crease where it touches reveal page)
+        animation2 = [CABasicAnimation animationWithKeyPath:@"opacity"];
+        [animation2 setFromValue:[NSNumber numberWithDouble:[self flippingPageShadowOpacity] * (1-fromProgress)]];
+        [animation2 setToValue:[NSNumber numberWithDouble:0]];
+        [animation2 setFillMode:kCAFillModeForwards];
+        [animation2 setRemovedOnCompletion:NO];
+        [flippingShadow addAnimation:animation2 forKey:nil];
+        [flippingShadow setOpacity:0];
+	}
+    
 	if (!inward)
 	{
 		// Darken facing page as it gets covered by back page flipping down (along a sine curve)
