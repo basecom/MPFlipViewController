@@ -70,7 +70,14 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 	self = [super initWithSourceView:sourceView destinationView:destinationView duration:duration timingCurve:UIViewAnimationCurveEaseInOut completionAction:action];
 	if (self)
 	{
-		_style = style;	
+        if([[[UIDevice currentDevice] systemVersion] intValue] >= 7)
+        {
+            CGRect rec = self.rect;
+            rec.origin.y = 64;
+            rec.size.height -= 64;
+            self.rect = rec;
+        }
+		_style = style;
 		_coveredPageShadowOpacity = DEFAULT_COVERED_PAGE_SHADOW_OPACITY;
 		_flippingPageShadowOpacity = DEFAULT_FLIPPING_PAGE_SHADOW_OPACITY;
 		_flipShadowColor = [UIColor blackColor];
@@ -200,7 +207,9 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 	
 	CGRect destUpperRect = CGRectOffset(upperRect, -upperRect.origin.x, -upperRect.origin.y);
 	CGRect destLowerRect = CGRectOffset(lowerRect, -upperRect.origin.x, -upperRect.origin.y);
-	
+	destLowerRect.size.height -= 10;
+    destUpperRect.size.height -= 10;
+    
 	if ([self isDimissing] && !isRubberbanding)
 	{
 		CGFloat x = self.destinationView.bounds.size.width - bounds.size.width;
@@ -322,6 +331,9 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 		self.layerReveal.bounds = (CGRect){CGPointZero, drawReveal? pageRevealImage.size : forwards? destLowerRect.size : destUpperRect.size};
 		self.layerReveal.anchorPoint = CGPointMake(vertical? 0.5 : forwards? 0 : 1, vertical? forwards? 0 : 1 : 0.5);
 		self.layerReveal.position = CGPointMake(vertical? width/2 : upperHeight, vertical? upperHeight : width/2);
+        CGPoint po = self.layerReveal.position;
+        po.y += 5;
+        self.layerReveal.position = po;
 		if (drawReveal)
 			[self.layerReveal setContents:(id)[pageRevealImage CGImage]];
 		if (!isResizing)
@@ -362,6 +374,9 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 		if (!isResizing)
 			self.layerBack = [CALayer layer];
 		self.layerBack.bounds = (CGRect){CGPointZero, pageBackImage.size};
+        CGRect bound = self.layerBack.bounds;
+        bound.size.height += 10;
+        self.layerBack.bounds = bound;
 		self.layerBack.anchorPoint = CGPointMake(vertical? 0.5 : forwards? 1 : 0, vertical? forwards? 1 : 0 : 0.5);
 		self.layerBack.position = CGPointMake(vertical? width/2 : upperHeight, vertical? upperHeight : width/2);
 		[self.layerBack setContents:(id)[pageBackImage CGImage]];
