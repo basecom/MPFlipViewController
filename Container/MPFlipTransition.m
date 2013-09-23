@@ -12,6 +12,7 @@
 
 #import "MPFlipTransition.h"
 #import "MPAnimation.h"
+#import "MPFlipViewController.h"
 #import <QuartzCore/QuartzCore.h>
 #include <math.h>
 
@@ -74,10 +75,14 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 	{
         if(IS_IOS7)
         {
-            CGRect rec = self.rect;
-            rec.origin.y = 64;
-            rec.size.height -= 64;
-            self.rect = rec;
+            UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
+            if(vc.navigationController && [[[vc nextResponder] nextResponder] superclass] != [MPFlipViewController class])
+            {
+                CGRect rec = self.rect;
+                rec.origin.y = 64;
+                rec.size.height -= 64;
+                self.rect = rec;
+            }
         }
 		_style = style;
 		_coveredPageShadowOpacity = DEFAULT_COVERED_PAGE_SHADOW_OPACITY;
@@ -166,12 +171,31 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 {
 	if (!isResizing && [self wereLayersBuilt])
 		return;
-
+    
 	BOOL forwards = ([self style] & MPFlipStyleDirectionMask) != MPFlipStyleDirectionBackward;
 	BOOL vertical = ([self style] & MPFlipStyleOrientationMask) == MPFlipStyleOrientationVertical;
 	BOOL inward = ([self style] & MPFlipStylePerspectiveMask) == MPFlipStylePerspectiveReverse;
 	BOOL isRubberbanding = !self.destinationView;
 	
+    UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
+    if([[[vc nextResponder] nextResponder] superclass] == [MPFlipViewController class])
+    {
+        if(forwards)
+        {
+            CGRect rec = self.rect;
+            rec.origin.y = 64;
+            rec.size.height -= 64;
+            self.rect = rec;
+        }
+        else
+        {
+            CGRect rec = self.rect;
+            rec.origin.y += 15;
+            rec.size.height += 64;
+            self.rect = rec;
+        }
+    }
+    
 	CGRect bounds = self.rect;
 	CGFloat scale = [[UIScreen mainScreen] scale];
 	
@@ -212,8 +236,12 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
     
     if(IS_IOS7)
     {
-        destLowerRect.size.height -= 10;
-        destUpperRect.size.height -= 10;
+        UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
+        if(vc.navigationController)
+        {
+            destLowerRect.size.height -= 10;
+            destUpperRect.size.height -= 10;
+        }
     }
     
 	if ([self isDimissing] && !isRubberbanding)
@@ -304,17 +332,23 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 	
     if(!forwards && IS_IOS7)
     {
-        destLowerRect.origin.y += 10;
+        UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
+        if(vc.navigationController)
+            destLowerRect.origin.y += 10;
     }
 	UIImage *pageBackImage = isRubberbanding? nil : [MPAnimation renderImageFromView:self.destinationView withRect:forwards? destUpperRect : destLowerRect transparentInsets:insets];
     
     if(forwards && IS_IOS7)
     {
-        destLowerRect.origin.y -= 10;
+        UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
+        if(vc.navigationController)
+            destLowerRect.origin.y -= 10;
     }
     else if(!forwards && IS_IOS7)
     {
-        destUpperRect.origin.y += 19;
+        UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
+        if(vc.navigationController)
+            destUpperRect.origin.y += 19;
     }
 	UIImage *pageRevealImage = drawReveal? [MPAnimation renderImageFromView:self.destinationView withRect:forwards? destLowerRect : destUpperRect] : nil;
 	
@@ -353,16 +387,24 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
         
         if(IS_IOS7)
         {
-            CGRect bnds = self.layerReveal.bounds;
-            bnds.size.height += 9;
-            self.layerReveal.bounds = bnds;
+            UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
+            if(vc.navigationController)
+            {
+                CGRect bnds = self.layerReveal.bounds;
+                bnds.size.height += 9;
+                self.layerReveal.bounds = bnds;
+            }
         }
         
         if(!forwards && IS_IOS7)
         {
-            CGPoint po = self.layerReveal.position;
-            po.y -= 1;
-            self.layerReveal.position = po;
+            UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
+            if(vc.navigationController)
+            {
+                CGPoint po = self.layerReveal.position;
+                po.y -= 1;
+                self.layerReveal.position = po;
+            }
         }
         
 		if (drawReveal)
@@ -408,9 +450,13 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
         
         if(IS_IOS7)
         {
-            CGRect bound = self.layerBack.bounds;
-            bound.size.height += 10;
-            self.layerBack.bounds = bound;
+            UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
+            if(vc.navigationController)
+            {
+                CGRect bound = self.layerBack.bounds;
+                bound.size.height += 10;
+                self.layerBack.bounds = bound;
+            }
         }
 		self.layerBack.anchorPoint = CGPointMake(vertical? 0.5 : forwards? 1 : 0, vertical? forwards? 1 : 0 : 0.5);
 		self.layerBack.position = CGPointMake(vertical? width/2 : upperHeight, vertical? upperHeight : width/2);
