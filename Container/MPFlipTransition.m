@@ -178,7 +178,7 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 	BOOL isRubberbanding = !self.destinationView;
 	
     UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
-    if([[[vc nextResponder] nextResponder] superclass] == [MPFlipViewController class])
+    if(vc.navigationController && [[[vc nextResponder] nextResponder] superclass] == [MPFlipViewController class])
     {
         if(forwards)
         {
