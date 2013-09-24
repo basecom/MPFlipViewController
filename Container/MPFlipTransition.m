@@ -238,6 +238,15 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 	// facing Page = the other half of the current view (doesn't move, gets covered by back page during 2nd half)
 	// back Page   = the half of the next view that appears on the flipping page during 2nd half
 	// reveal Page = the other half of the next view (doesn't move, gets revealed by front page during 1st half)
+    if(!forwards)
+    {
+        UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
+        if([[[vc nextResponder] nextResponder] superclass] == [MPFlipViewController class])
+        {
+            lowerRect.origin.y -= bounds.origin.y;
+            upperRect.origin.y -= bounds.origin.y;
+        }
+    }
 	UIImage *pageFrontImage = [MPAnimation renderImageFromView:self.sourceView withRect:forwards? lowerRect : upperRect transparentInsets:insets];
 	
 	self.actingSource = [self sourceView]; // the view that is already part of the view hierarchy
@@ -301,6 +310,17 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 	}
 	
 	UIImage *pageFacingImage = drawFacing? [MPAnimation renderImageFromView:self.sourceView withRect:forwards? upperRect : lowerRect] : nil;
+
+    if(!forwards)
+    {
+        UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
+        if([[[vc nextResponder] nextResponder] superclass] == [MPFlipViewController class])
+        {
+            destLowerRect.origin.y += bounds.origin.y;
+            destUpperRect.origin.y += bounds.origin.y;
+        }
+    }
+    
 	UIImage *pageBackImage = isRubberbanding? nil : [MPAnimation renderImageFromView:self.destinationView withRect:forwards? destUpperRect : destLowerRect transparentInsets:insets];
 	UIImage *pageRevealImage = drawReveal? [MPAnimation renderImageFromView:self.destinationView withRect:forwards? destLowerRect : destUpperRect] : nil;
 	
@@ -328,6 +348,14 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 	{
 		[self.animationView.layer setPosition:center];
 	}
+    
+    int fixedHeight;
+    fixedHeight = upperHeight;
+    UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
+    if([[[vc nextResponder] nextResponder] superclass] == [MPFlipViewController class] && !forwards)
+    {
+        fixedHeight = upperHeight-bounds.origin.y;
+    }
 	
 	if (!isRubberbanding)
 	{
@@ -335,8 +363,9 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 			self.layerReveal = [CALayer layer];
 		self.layerReveal.bounds = (CGRect){CGPointZero, drawReveal? pageRevealImage.size : forwards? destLowerRect.size : destUpperRect.size};
 		self.layerReveal.anchorPoint = CGPointMake(vertical? 0.5 : forwards? 0 : 1, vertical? forwards? 0 : 1 : 0.5);
-		self.layerReveal.position = CGPointMake(vertical? width/2 : upperHeight, vertical? upperHeight : width/2);
         
+		self.layerReveal.position = CGPointMake(vertical? width/2 : upperHeight, vertical? fixedHeight : width/2);
+
 		if (drawReveal)
 			[self.layerReveal setContents:(id)[pageRevealImage CGImage]];
 		if (!isResizing)
@@ -347,7 +376,7 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 		self.layerFacing = [CALayer layer];
 	self.layerFacing.bounds = (CGRect){CGPointZero, drawFacing? pageFacingImage.size : forwards? upperRect.size : lowerRect.size};
 	self.layerFacing.anchorPoint = CGPointMake(vertical? 0.5 : forwards? 1 : 0, vertical? forwards? 1 : 0 : 0.5);
-	self.layerFacing.position = CGPointMake(vertical? width/2 : upperHeight, vertical? upperHeight : width/2);
+	self.layerFacing.position = CGPointMake(vertical? width/2 : upperHeight, vertical? fixedHeight : width/2);
 	if (drawFacing)
 		[self.layerFacing setContents:(id)[pageFacingImage CGImage]];
 	if (!isResizing)
@@ -367,7 +396,7 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 		self.layerFront = [CALayer layer];
 	self.layerFront.bounds = (CGRect){CGPointZero, pageFrontImage.size};
 	self.layerFront.anchorPoint = CGPointMake(vertical? 0.5 : forwards? 0 : 1, vertical? forwards? 0 : 1 : 0.5);
-	self.layerFront.position = CGPointMake(vertical? width/2 : upperHeight, vertical? upperHeight : width/2);
+	self.layerFront.position = CGPointMake(vertical? width/2 : upperHeight, vertical? fixedHeight : width/2);
 	[self.layerFront setContents:(id)[pageFrontImage CGImage]];
 	if (!isResizing)
 		[self.animationView.layer addSublayer:self.layerFront];
@@ -379,7 +408,7 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 		self.layerBack.bounds = (CGRect){CGPointZero, pageBackImage.size};
 
 		self.layerBack.anchorPoint = CGPointMake(vertical? 0.5 : forwards? 1 : 0, vertical? forwards? 1 : 0 : 0.5);
-		self.layerBack.position = CGPointMake(vertical? width/2 : upperHeight, vertical? upperHeight : width/2);
+		self.layerBack.position = CGPointMake(vertical? width/2 : upperHeight, vertical? fixedHeight : width/2);
 		[self.layerBack setContents:(id)[pageBackImage CGImage]];
 	}
 	
