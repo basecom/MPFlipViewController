@@ -76,7 +76,7 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
         if(IS_IOS7)
         {
             UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
-            if(vc.navigationController && [[[vc nextResponder] nextResponder] superclass] != [MPFlipViewController class])
+            if(vc.navigationController)
             {
                 CGRect rec = self.rect;
                 rec.origin.y = 64;
@@ -176,26 +176,7 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 	BOOL vertical = ([self style] & MPFlipStyleOrientationMask) == MPFlipStyleOrientationVertical;
 	BOOL inward = ([self style] & MPFlipStylePerspectiveMask) == MPFlipStylePerspectiveReverse;
 	BOOL isRubberbanding = !self.destinationView;
-	
-    UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
-    if(vc.navigationController && [[[vc nextResponder] nextResponder] superclass] == [MPFlipViewController class])
-    {
-        if(forwards)
-        {
-            CGRect rec = self.rect;
-            rec.origin.y = 64;
-            rec.size.height -= 64;
-            self.rect = rec;
-        }
-        else
-        {
-            CGRect rec = self.rect;
-            rec.origin.y += 15;
-            rec.size.height += 64;
-            self.rect = rec;
-        }
-    }
-    
+
 	CGRect bounds = self.rect;
 	CGFloat scale = [[UIScreen mainScreen] scale];
 	
@@ -217,7 +198,7 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 			upperRect.size.height = (roundf(upperRect.size.height * scale)/scale);
 			lowerRect.size.height = bounds.size.height - upperRect.size.height;
 		}
-		else 
+		else
 		{
 			upperRect.size.width = (roundf(upperRect.size.width * scale)/scale);
 			lowerRect.size.width = bounds.size.width - upperRect.size.width;
@@ -234,15 +215,6 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 	CGRect destUpperRect = CGRectOffset(upperRect, -upperRect.origin.x, -upperRect.origin.y);
 	CGRect destLowerRect = CGRectOffset(lowerRect, -upperRect.origin.x, -upperRect.origin.y);
     
-    if(IS_IOS7)
-    {
-        UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
-        if(vc.navigationController)
-        {
-            destLowerRect.size.height -= 10;
-            destUpperRect.size.height -= 10;
-        }
-    }
     
 	if ([self isDimissing] && !isRubberbanding)
 	{
@@ -329,27 +301,7 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 	}
 	
 	UIImage *pageFacingImage = drawFacing? [MPAnimation renderImageFromView:self.sourceView withRect:forwards? upperRect : lowerRect] : nil;
-	
-    if(!forwards && IS_IOS7)
-    {
-        UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
-        if(vc.navigationController)
-            destLowerRect.origin.y += 10;
-    }
 	UIImage *pageBackImage = isRubberbanding? nil : [MPAnimation renderImageFromView:self.destinationView withRect:forwards? destUpperRect : destLowerRect transparentInsets:insets];
-    
-    if(forwards && IS_IOS7)
-    {
-        UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
-        if(vc.navigationController)
-            destLowerRect.origin.y -= 10;
-    }
-    else if(!forwards && IS_IOS7)
-    {
-        UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
-        if(vc.navigationController)
-            destUpperRect.origin.y += 19;
-    }
 	UIImage *pageRevealImage = drawReveal? [MPAnimation renderImageFromView:self.destinationView withRect:forwards? destLowerRect : destUpperRect] : nil;
 	
 	CATransform3D transform = CATransform3DIdentity;
@@ -384,28 +336,6 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 		self.layerReveal.bounds = (CGRect){CGPointZero, drawReveal? pageRevealImage.size : forwards? destLowerRect.size : destUpperRect.size};
 		self.layerReveal.anchorPoint = CGPointMake(vertical? 0.5 : forwards? 0 : 1, vertical? forwards? 0 : 1 : 0.5);
 		self.layerReveal.position = CGPointMake(vertical? width/2 : upperHeight, vertical? upperHeight : width/2);
-        
-        if(IS_IOS7)
-        {
-            UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
-            if(vc.navigationController)
-            {
-                CGRect bnds = self.layerReveal.bounds;
-                bnds.size.height += 9;
-                self.layerReveal.bounds = bnds;
-            }
-        }
-        
-        if(!forwards && IS_IOS7)
-        {
-            UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
-            if(vc.navigationController)
-            {
-                CGPoint po = self.layerReveal.position;
-                po.y -= 1;
-                self.layerReveal.position = po;
-            }
-        }
         
 		if (drawReveal)
 			[self.layerReveal setContents:(id)[pageRevealImage CGImage]];
@@ -447,17 +377,7 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 		if (!isResizing)
 			self.layerBack = [CALayer layer];
 		self.layerBack.bounds = (CGRect){CGPointZero, pageBackImage.size};
-        
-        if(IS_IOS7)
-        {
-            UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
-            if(vc.navigationController)
-            {
-                CGRect bound = self.layerBack.bounds;
-                bound.size.height += 10;
-                self.layerBack.bounds = bound;
-            }
-        }
+
 		self.layerBack.anchorPoint = CGPointMake(vertical? 0.5 : forwards? 1 : 0, vertical? forwards? 1 : 0 : 0.5);
 		self.layerBack.position = CGPointMake(vertical? width/2 : upperHeight, vertical? upperHeight : width/2);
 		[self.layerBack setContents:(id)[pageBackImage CGImage]];
@@ -531,7 +451,7 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 	if (inward)
 		transform.m34 = -transform.m34; // flip perspective around
 	self.animationView.layer.sublayerTransform = transform;
-		
+    
 	[self setLayersBuilt:YES];
 }
 
@@ -542,12 +462,12 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 		return;
 	
 	[self.animationView removeFromSuperview];
-
+    
 	[CATransaction begin];
 	[CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
 	[self.revealLayerMask removeFromSuperlayer]; // don't animate
 	[CATransaction commit];
-
+    
 	self.animationView = nil;
 	self.layerFront = nil;
 	self.layerBack = nil;
@@ -681,7 +601,7 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 		[coveredShadow addAnimation:keyAnimation forKey:nil];
 		[coveredShadow setOpacity:[[arrayOpacity lastObject] floatValue]];
 	}
-		
+    
 	// Commit the transaction for 1st half
 	[CATransaction commit];
 }
@@ -692,7 +612,7 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 	BOOL forwards = ([self style] & MPFlipStyleDirectionMask) != MPFlipStyleDirectionBackward;
 	BOOL vertical = ([self style] & MPFlipStyleOrientationMask) == MPFlipStyleOrientationVertical;
 	BOOL inward = ([self style] & MPFlipStylePerspectiveMask) == MPFlipStylePerspectiveReverse;
-
+    
 	// 1-stage animation
 	CALayer *layer = isFallingBack? self.layerFront : self.layerBack;
 	CALayer *flippingShadow = isFallingBack? self.layerFrontShadow : self.layerBackShadow;
@@ -828,7 +748,7 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 	[self.layerBackShadow setOpacity:[self flippingPageShadowOpacity] * (1- progress)];
 	CGFloat sinOpacity = sin(mp_radians(90 * progress)) * [self coveredPageShadowOpacity];
 	[self.layerFacingShadow setOpacity:sinOpacity];
-		
+    
 	[CATransaction commit];
 }
 
@@ -948,7 +868,7 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 }
 
 + (void)presentViewController:(UIViewController *)viewControllerToPresent from:(UIViewController *)presentingController duration:(NSTimeInterval)duration style:(MPFlipStyle)style completion:(void (^)(BOOL finished))completion
-{		
+{
 	MPFlipTransition *flipTransition = [[MPFlipTransition alloc] initWithSourceView:presentingController.view destinationView:viewControllerToPresent.view duration:duration style:style completionAction:MPTransitionActionNone];
 	
 	[flipTransition setPresentingController:presentingController];
@@ -1022,10 +942,10 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 //- (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated
 - (void)pushViewController:(UIViewController *)viewController flipStyle:(MPFlipStyle)style
 {
-	[MPFlipTransition transitionFromViewController:[self visibleViewController] 
-								  toViewController:viewController 
-										  duration:[MPFlipTransition defaultDuration]  
-											 style:style 
+	[MPFlipTransition transitionFromViewController:[self visibleViewController]
+								  toViewController:viewController
+										  duration:[MPFlipTransition defaultDuration]
+											 style:style
 										completion:^(BOOL finished) {
 											[self pushViewController:viewController animated:NO];
 										}
@@ -1036,9 +956,9 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 {
 	UIViewController *toController = [[self viewControllers] objectAtIndex:[[self viewControllers] count] - 2];
 	
-	[MPFlipTransition transitionFromViewController:[self visibleViewController] 
-								  toViewController:toController 
-										  duration:[MPFlipTransition defaultDuration] 
+	[MPFlipTransition transitionFromViewController:[self visibleViewController]
+								  toViewController:toController
+										  duration:[MPFlipTransition defaultDuration]
 											 style:style
 										completion:^(BOOL finished) {
 											[self popViewControllerAnimated:NO];
