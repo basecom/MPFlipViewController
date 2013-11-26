@@ -24,6 +24,9 @@
     // Create a new context of the desired size to render the image
 	UIGraphicsBeginImageContextWithOptions(frame.size, YES, 0);
 	CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    // set interpolation to low for a quicker rendering
+    CGContextSetInterpolationQuality(context, kCGInterpolationLow);
 	
 	// Translate it, to the desired position
 	CGContextTranslateCTM(context, -frame.origin.x, -frame.origin.y);
@@ -52,6 +55,9 @@
     // Create a new context of the desired size to render the image
 	UIGraphicsBeginImageContextWithOptions(imageSizeWithBorder, UIEdgeInsetsEqualToEdgeInsets(insets, UIEdgeInsetsZero), 0);
 	CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    // set interpolation to low for a quicker rendering
+    CGContextSetInterpolationQuality(context, kCGInterpolationLow);
 	
 	// Clip the context to the portion of the view we will draw
 	CGContextClipToRect(context, (CGRect){{insets.left, insets.top}, frame.size});
