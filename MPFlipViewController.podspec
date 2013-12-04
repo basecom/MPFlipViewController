@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.homepage     = "http://markpospesel.com/2012/07/28/mpflipviewcontroller/"
   s.license      = { :type => 'Modified BSD License', :file => 'Source Code License.rtf' }
   s.author       = "Mark Pospesel"
-  s.source       = { :git => "https://github.com/basecom/MPFlipViewController.git", :commit => 'bca20eff2ad8fb57b7262b2da182c1b6f8b05b1d' }
+  s.source       = { :git => "https://github.com/basecom/MPFlipViewController.git", :commit => '8a9ba5389e2891a9ff17afc4fa05f4b0c5be9ee2' }
   s.platform     = :ios, '5.0'
   s.source_files = 'Container'
   s.requires_arc = true
