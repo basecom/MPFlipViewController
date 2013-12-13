@@ -388,8 +388,13 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 			self.revealLayerMask = [CAShapeLayer layer];
 		CGRect maskRect = (forwards == isDestinationViewAbove)? destLowerRect : destUpperRect;
         
-        if(IS_IOS7)
+        BOOL isUpperRect = CGRectEqualToRect(maskRect, destUpperRect);
+        BOOL isIOS7 = IS_IOS7;
+        
+        if(isIOS7 && isUpperRect)
+        {
             maskRect.origin.y = self.rect.origin.y;
+        }
         
 		self.revealLayerMask.path = [[UIBezierPath bezierPathWithRect:maskRect] CGPath];
 		UIView *viewToMask = isDestinationViewAbove? self.destinationView : self.sourceView;
