@@ -331,16 +331,22 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
 	CGFloat upperHeight = roundf(height * scale) / scale; // round heights to integer for odd height
 	
 	// view to hold all our sublayers
-	CGRect mainRect = [containerView convertRect:self.rect fromView:self.actingSource];
+    UIView *actingSource;
+    if([self.actingSource respondsToSelector:@selector(scrollView)]) {
+        actingSource = [self.actingSource performSelector:@selector(scrollView)];
+    } else {
+        actingSource = self.actingSource;
+    }
+	CGRect mainRect = [containerView convertRect:self.rect fromView:actingSource];
 	CGPoint center = (CGPoint){CGRectGetMidX(mainRect), CGRectGetMidY(mainRect)};
 	if (isModal)
-		mainRect = [self.actingSource convertRect:mainRect fromView:nil];
+		mainRect = [actingSource convertRect:mainRect fromView:nil];
 	if (!isResizing)
 		self.animationView = [[UIView alloc] initWithFrame:mainRect];
 	else
 		self.animationView.frame = mainRect;
 	self.animationView.backgroundColor = [UIColor clearColor];
-	self.animationView.transform = self.actingSource.transform;
+	self.animationView.transform = actingSource.transform;
 	self.animationView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
 	if (!isResizing)
 		[containerView addSubview:self.animationView];
