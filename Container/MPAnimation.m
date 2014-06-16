@@ -21,15 +21,27 @@
 // Pass in bounds to render the entire view, or another rect to render a subset of the view
 + (UIImage *)renderImageFromView:(UIView *)view withRect:(CGRect)frame
 {
+    CGFloat originY = frame.origin.y;
+    if([view respondsToSelector:@selector(scrollView)]) {
+        UIScrollView *scrollView = [view performSelector:@selector(scrollView)];
+        originY += fabs(scrollView.contentOffset.y);
+    }
+    
     // Create a new context of the desired size to render the image
 	UIGraphicsBeginImageContextWithOptions(frame.size, YES, 0);
 	CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    // set interpolation to low for a quicker rendering
+    CGContextSetInterpolationQuality(context, kCGInterpolationLow);
 	
 	// Translate it, to the desired position
-	CGContextTranslateCTM(context, -frame.origin.x, -frame.origin.y);
+	CGContextTranslateCTM(context, -frame.origin.x, -originY);
     
     // Render the view as image
-    [view.layer renderInContext:context];
+    if([view respondsToSelector:@selector(drawViewHierarchyInRect:afterScreenUpdates:)])
+        [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:YES];
+    else
+        [view.layer renderInContext:context];
     
     // Fetch the image   
     UIImage *renderedImage = UIGraphicsGetImageFromCurrentImageContext();
@@ -45,18 +57,30 @@
 // (UIEdgeInsets)insets defines the size of the transparent margins to create
 + (UIImage *)renderImageFromView:(UIView *)view withRect:(CGRect)frame transparentInsets:(UIEdgeInsets)insets
 {
+    CGFloat originY = frame.origin.y;
+    if([view respondsToSelector:@selector(scrollView)]) {
+        UIScrollView *scrollView = [view performSelector:@selector(scrollView)];
+        originY += fabs(scrollView.contentOffset.y);
+    }
+    
 	CGSize imageSizeWithBorder = CGSizeMake(frame.size.width + insets.left + insets.right, frame.size.height + insets.top + insets.bottom);
     // Create a new context of the desired size to render the image
 	UIGraphicsBeginImageContextWithOptions(imageSizeWithBorder, UIEdgeInsetsEqualToEdgeInsets(insets, UIEdgeInsetsZero), 0);
 	CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    // set interpolation to low for a quicker rendering
+    CGContextSetInterpolationQuality(context, kCGInterpolationLow);
 	
 	// Clip the context to the portion of the view we will draw
 	CGContextClipToRect(context, (CGRect){{insets.left, insets.top}, frame.size});
 	// Translate it, to the desired position
-	CGContextTranslateCTM(context, -frame.origin.x + insets.left, -frame.origin.y + insets.top);
+	CGContextTranslateCTM(context, -frame.origin.x + insets.left, -originY + insets.top);
     
     // Render the view as image
-    [view.layer renderInContext:context];
+    if([view respondsToSelector:@selector(drawViewHierarchyInRect:afterScreenUpdates:)])
+        [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:YES];
+    else
+        [view.layer renderInContext:context];
     
     // Fetch the image   
     UIImage *renderedImage = UIGraphicsGetImageFromCurrentImageContext();
