@@ -24,12 +24,18 @@
     // Create a new context of the desired size to render the image
 	UIGraphicsBeginImageContextWithOptions(frame.size, YES, 0);
 	CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    // set interpolation to low for a quicker rendering
+    CGContextSetInterpolationQuality(context, kCGInterpolationLow);
 	
 	// Translate it, to the desired position
 	CGContextTranslateCTM(context, -frame.origin.x, -frame.origin.y);
     
     // Render the view as image
-    [view.layer renderInContext:context];
+    if([view respondsToSelector:@selector(drawViewHierarchyInRect:afterScreenUpdates:)])
+        [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:YES];
+    else
+        [view.layer renderInContext:context];
     
     // Fetch the image   
     UIImage *renderedImage = UIGraphicsGetImageFromCurrentImageContext();
@@ -49,6 +55,9 @@
     // Create a new context of the desired size to render the image
 	UIGraphicsBeginImageContextWithOptions(imageSizeWithBorder, UIEdgeInsetsEqualToEdgeInsets(insets, UIEdgeInsetsZero), 0);
 	CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    // set interpolation to low for a quicker rendering
+    CGContextSetInterpolationQuality(context, kCGInterpolationLow);
 	
 	// Clip the context to the portion of the view we will draw
 	CGContextClipToRect(context, (CGRect){{insets.left, insets.top}, frame.size});
@@ -56,7 +65,10 @@
 	CGContextTranslateCTM(context, -frame.origin.x + insets.left, -frame.origin.y + insets.top);
     
     // Render the view as image
-    [view.layer renderInContext:context];
+    if([view respondsToSelector:@selector(drawViewHierarchyInRect:afterScreenUpdates:)])
+        [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:YES];
+    else
+        [view.layer renderInContext:context];
     
     // Fetch the image   
     UIImage *renderedImage = UIGraphicsGetImageFromCurrentImageContext();
