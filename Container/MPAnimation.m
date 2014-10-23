@@ -38,10 +38,7 @@
 	CGContextTranslateCTM(context, -frame.origin.x, -originY);
     
     // Render the view as image
-    if([view respondsToSelector:@selector(drawViewHierarchyInRect:afterScreenUpdates:)])
-        [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:YES];
-    else
-        [view.layer renderInContext:context];
+    [view.layer renderInContext:context];
     
     // Fetch the image   
     UIImage *renderedImage = UIGraphicsGetImageFromCurrentImageContext();
@@ -77,10 +74,7 @@
 	CGContextTranslateCTM(context, -frame.origin.x + insets.left, -originY + insets.top);
     
     // Render the view as image
-    if([view respondsToSelector:@selector(drawViewHierarchyInRect:afterScreenUpdates:)])
-        [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:YES];
-    else
-        [view.layer renderInContext:context];
+    [view.layer renderInContext:context];
     
     // Fetch the image   
     UIImage *renderedImage = UIGraphicsGetImageFromCurrentImageContext();
