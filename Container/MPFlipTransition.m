@@ -76,7 +76,7 @@ static inline double mp_radians (double degrees) {return degrees * M_PI/180;}
         if(IS_IOS7)
         {
             UIViewController *vc = (UIViewController*)[self.sourceView nextResponder];
-            if(vc.navigationController && destinationView != nil)
+            if(vc.navigationController && destinationView != nil && vc.navigationController.navigationBar.translucent)
             {
                 CGRect rec = self.rect;
                 rec.origin.y = 64;
